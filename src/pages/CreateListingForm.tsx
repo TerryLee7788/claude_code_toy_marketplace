@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { resizeImage } from "@/lib/imageUtils";
 import { ProductWithImage } from "@/hooks/useUserProducts";
+import { validateFormProfanity } from "@/utils/profanityFilter";
 
 const CreateListingForm = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
@@ -213,6 +214,37 @@ const CreateListingForm = () => {
       if (!user) {
         toast({ title: "Please sign in", description: "You must be logged in to publish.", variant: "destructive" });
         return;
+      }
+
+      // Check for profanity in form fields
+      const formFields = {
+        productName: productName.trim(),
+        color: color.trim(),
+        leather: leather.trim(),
+        stamp: stamp.trim(),
+        location: location.trim(),
+        description: description.trim(),
+      };
+
+      const profanityResults = validateFormProfanity(formFields, user.id);
+      
+      // Check if any profanity was detected
+      const profanityDetected = Object.values(profanityResults).some(result => result.hasProfanity);
+      
+      if (profanityDetected) {
+        // Show toast notification to user
+        const detectedFields = Object.entries(profanityResults)
+          .filter(([, result]) => result.hasProfanity)
+          .map(([field]) => field);
+          
+        toast({
+          title: "Inappropriate content detected",
+          description: `Please review your content in: ${detectedFields.join(', ')}`,
+          variant: "destructive"
+        });
+        
+        // Still allow submission but profanity has been logged to Sentry
+        console.warn('Profanity detected in form submission, but allowing submission to proceed');
       }
 
       const priceNumber = Number(price);
