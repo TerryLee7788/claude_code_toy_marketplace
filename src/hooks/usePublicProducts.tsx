@@ -11,22 +11,27 @@ export interface PublicProduct {
   seller_name: string;
 }
 
-export type SortBy = 'created_at' | 'price_asc' | 'price_desc';
+export type SortBy = 'created_at' | 'price';
+export type SortOrder = 'asc' | 'desc';
 
 export const usePublicProducts = () => {
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProducts = async (searchTerm?: string, sortBy: SortBy = 'created_at') => {
+  const fetchProducts = async (searchTerm?: string, sortBy: SortBy = 'created_at', sortOrder: SortOrder = 'desc') => {
     try {
       setLoading(true);
       
       // Use the secure RPC that matches our database function signature
+      const dbSortBy = sortBy === 'price' && sortOrder === 'asc' ? 'price_asc' :
+                       sortBy === 'price' && sortOrder === 'desc' ? 'price_desc' :
+                       'created_at';
+
       const { data: productsData, error: productsError } = await supabase
-        .rpc('get_public_products', { 
-          search_term: searchTerm || null, 
-          sort_by: sortBy 
+        .rpc('get_public_products', {
+          search_term: searchTerm || null,
+          sort_by: dbSortBy
         });
 
       if (productsError) throw productsError;
