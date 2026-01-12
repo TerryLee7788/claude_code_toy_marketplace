@@ -15,6 +15,7 @@ interface Profile {
   email: string;
   first_name: string | null;
   last_name: string | null;
+  nickname: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +24,8 @@ const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [nicknameValue, setNicknameValue] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -80,6 +83,12 @@ const Profile = () => {
         });
       } else {
         setProfile(data);
+        // Set nickname value for editing
+        if (data) {
+          const defaultNickname = data.nickname ||
+            (data.first_name && data.last_name ? `${data.first_name} ${data.last_name}` : "");
+          setNicknameValue(defaultNickname);
+        }
       }
     } catch (error) {
       console.error('Error:', error);
@@ -90,6 +99,55 @@ const Profile = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNicknameEdit = () => {
+    setIsEditingNickname(true);
+  };
+
+  const handleNicknameCancel = () => {
+    // Reset to current profile nickname
+    if (profile) {
+      const defaultNickname = profile.nickname ||
+        (profile.first_name && profile.last_name ? `${profile.first_name} ${profile.last_name}` : "");
+      setNicknameValue(defaultNickname);
+    }
+    setIsEditingNickname(false);
+  };
+
+  const handleNicknameSave = async () => {
+    if (!profile) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ nickname: nicknameValue.trim() })
+        .eq('user_id', profile.user_id);
+
+      if (error) {
+        console.error('Error updating nickname:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update nickname.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Nickname updated successfully.",
+        });
+        // Refresh profile to get updated data
+        await fetchProfile(profile.user_id);
+        setIsEditingNickname(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -165,10 +223,62 @@ const Profile = () => {
           
           {/* Profile Fields */}
           <div className="space-y-3">
+            {/* Nickname Field with Edit */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-sm font-medium text-foreground">Nickname</div>
+                {!isEditingNickname && (
+                  <Button
+                    onClick={handleNicknameEdit}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-foreground underline hover:no-underline"
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
+              {isEditingNickname ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={nicknameValue}
+                    onChange={(e) => setNicknameValue(e.target.value)}
+                    className="w-full px-3 py-2 border border-foreground/15 rounded-md bg-background text-foreground"
+                    placeholder="Enter your nickname"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleNicknameSave}
+                      className="bg-secondary text-secondary-foreground hover:bg-secondary/90 h-[36px] px-4 rounded-[20px]"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      onClick={handleNicknameCancel}
+                      variant="ghost"
+                      className="h-[36px] px-4 rounded-[20px] text-foreground"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-foreground">
+                  {profile?.nickname ||
+                    (profile?.first_name && profile?.last_name
+                      ? `${profile.first_name} ${profile.last_name}`
+                      : "Not set"
+                    )
+                  }
+                </div>
+              )}
+            </div>
+
             <div>
               <div className="text-sm font-medium text-foreground mb-1">Name</div>
               <div className="text-foreground">
-                {profile?.first_name && profile?.last_name 
+                {profile?.first_name && profile?.last_name
                   ? `${profile.first_name} ${profile.last_name}`
                   : "Unable to fetch data"
                 }

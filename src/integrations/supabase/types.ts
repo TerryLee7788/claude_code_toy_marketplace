@@ -268,6 +268,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          nickname: string | null
           updated_at: string
           user_id: string
         }
@@ -277,6 +278,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          nickname?: string | null
           updated_at?: string
           user_id: string
         }
@@ -286,6 +288,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          nickname?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -332,10 +335,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_conversation: {
-        Args: { prod_id: string }
-        Returns: string
-      }
+      create_conversation: { Args: { prod_id: string }; Returns: string }
       get_conversation_details: {
         Args: { conv_id: string }
         Returns: {
@@ -383,6 +383,7 @@ export type Database = {
         Returns: {
           first_name: string
           last_name: string
+          nickname: string
           user_id: string
         }[]
       }
@@ -431,7 +432,7 @@ export type Database = {
         }[]
       }
       get_user_conversations: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           buyer_name: string
           first_image_url: string
@@ -446,7 +447,7 @@ export type Database = {
         }[]
       }
       get_user_saved_products: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           first_image_url: string
           location: string
@@ -462,26 +463,11 @@ export type Database = {
         Args: { conv_id: string }
         Returns: boolean
       }
-      is_participant_of_message: {
-        Args: { msg_id: string }
-        Returns: boolean
-      }
-      is_product_owner: {
-        Args: { product_uuid: string }
-        Returns: boolean
-      }
-      is_product_saved: {
-        Args: { product_uuid: string }
-        Returns: boolean
-      }
-      mark_conversation_read: {
-        Args: { conv_id: string }
-        Returns: undefined
-      }
-      mark_message_read: {
-        Args: { msg_id: string }
-        Returns: undefined
-      }
+      is_participant_of_message: { Args: { msg_id: string }; Returns: boolean }
+      is_product_owner: { Args: { product_uuid: string }; Returns: boolean }
+      is_product_saved: { Args: { product_uuid: string }; Returns: boolean }
+      mark_conversation_read: { Args: { conv_id: string }; Returns: undefined }
+      mark_message_read: { Args: { msg_id: string }; Returns: undefined }
       toggle_saved_product: {
         Args: { product_uuid: string }
         Returns: {

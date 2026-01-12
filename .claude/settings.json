@@ -1,5 +1,15 @@
 {
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'MUST check whether there are relevant skills to use first.'"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",
