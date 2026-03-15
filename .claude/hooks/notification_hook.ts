@@ -25,10 +25,10 @@ function logDebug(message: string): void {
   appendFileSync(logPath, logEntry);
 }
 
-function playNotificationSound(): boolean {
+function playNotificationSound(soundFile: string): boolean {
   try {
-    logDebug('Playing notification sound...');
-    execSync('afplay .claude/hooks/reminder_sound_f01.mp3', {
+    logDebug(`Playing notification sound: ${soundFile}`);
+    execSync(`afplay ${soundFile}`, {
       stdio: 'pipe',
       timeout: 5000 // 5 second timeout
     });
@@ -40,9 +40,19 @@ function playNotificationSound(): boolean {
   }
 }
 
+function parseArgs(): { reminderFile: string } {
+  const args = process.argv.slice(2);
+  const idx = args.indexOf('--sound_effect_file');
+  const reminderFile = idx !== -1 && args[idx + 1]
+    ? args[idx + 1]
+    : '.claude/hooks/default-notification-hook-reminder.mp3';
+  return { reminderFile };
+}
+
 function main(): void {
   try {
     logDebug('=== NOTIFICATION HOOK STARTED ===');
+    const { reminderFile } = parseArgs();
 
     // Read input from stdin
     let inputData = '';
@@ -66,8 +76,10 @@ function main(): void {
         logDebug(`Notification type: ${notificationType}`);
         logDebug(`Message: ${message}`);
 
+        const soundFile = reminderFile;
+
         // Play sound for all notifications (user decisions, permissions, etc.)
-        const soundPlayed = playNotificationSound();
+        const soundPlayed = playNotificationSound(soundFile);
 
         const response: HookResponse = {
           permissionDecision: 'allow',

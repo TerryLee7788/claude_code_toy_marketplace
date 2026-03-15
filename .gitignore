@@ -33,3 +33,6 @@ supabase/.temp
 
 # testing files
 images/
+
+# claude files 
+.claude/hooks/notification_hook_debug.log
