@@ -6,6 +6,7 @@
 
 import { appendFileSync } from 'fs';
 import { execSync } from 'child_process';
+import { resolve } from 'path';
 
 interface NotificationHookInput {
   notification_type: string;
@@ -26,12 +27,28 @@ function logDebug(message: string): void {
 }
 
 function playNotificationSound(soundFile: string): boolean {
+  const absolutePath = resolve(soundFile);
   try {
-    logDebug(`Playing notification sound: ${soundFile}`);
-    execSync(`afplay ${soundFile}`, {
-      stdio: 'pipe',
-      timeout: 5000 // 5 second timeout
-    });
+    logDebug(`Playing notification sound: ${absolutePath} (platform: ${process.platform})`);
+
+    if (process.platform === 'darwin') {
+      execSync(`afplay "${absolutePath}"`, {
+        stdio: 'pipe',
+        timeout: 5000
+      });
+    } else if (process.platform === 'win32') {
+      const psCommand = `Add-Type -AssemblyName presentationCore; $player = New-Object system.windows.media.mediaplayer; $player.open('${absolutePath}'); $player.Play(); Start-Sleep -Seconds 3; $player.Stop()`;
+      execSync(`powershell -NoProfile -NonInteractive -Command "${psCommand}"`, {
+        stdio: 'pipe',
+        timeout: 8000
+      });
+    } else {
+      execSync(`paplay "${absolutePath}" || aplay "${absolutePath}"`, {
+        stdio: 'pipe',
+        timeout: 5000
+      });
+    }
+
     logDebug('Notification sound played successfully');
     return true;
   } catch (error) {
@@ -118,6 +135,4 @@ function main(): void {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
-}
+main();
