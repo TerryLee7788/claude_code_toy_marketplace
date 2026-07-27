@@ -1,5 +1,5 @@
 // This file has intentional linting issues to test our hook
-
+  
 import { readFileSync } from 'fs'; // valid import but unused (will trigger linting warning)
 
 function badFunction11( x:number,y:number ):number{  // bad spacing around parameters and return type
