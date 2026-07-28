@@ -48,12 +48,6 @@ const FilterSheet = ({
                   Date Added
                 </Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="price" id="price" />
-                <Label htmlFor="price" className="text-foreground font-orator text-sm">
-                  Price
-                </Label>
-              </div>
             </RadioGroup>
           </div>
 
