@@ -34,5 +34,9 @@ supabase/.temp
 # testing files
 images/
 
-# claude files 
+# claude files
 .claude/hooks/notification_hook_debug.log
+.playwright-mcp/
+
+# browser automation test screenshots (root-level only)
+/*.png
